@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@800&display=swap" rel="stylesheet">  
+    <!-- Bulma CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script>
+      $(document).ready(function (){
+            card();
+            show_sign()
+        });
+
+        function show_sign() {
+          token = localStorage.getItem("token")
+          if (token) {
+            $("#login").hide()
+          }else{
+            $("#logout").hide()
+          }
+        }
+
+        function logout() {
+          localStorage.removeItem("token")
+          alert("로그아웃 완료")
+          window.location.replace("/")
+        }
+
+        function delete_card(written_id) {
+            $.ajax({
+              type : "DELETE",
+              url: '/api/written',
+              headers : {
+                'authorization' : `Bearer ${localStorage.getItem('token')}` 
+              },
+              data: {"id" : written_id,},
+              error: function(request, status, error) {
+                if (request.status == 401) {
+                  alert("로그인이 필요합니다.")
+                  window.location.href = '/login'
+                }
+              },
+              success: function(response) {
+                alert(response["result"])
+                window.location.reload(true)
+            
+          }
+        })}
+
+      function card() {
+        $("#cards-box").empty()
+        $.ajax({
+          type : "GET",
+          url: "/api/written",
+          data: {},
+          success: function(response) {
+            let writtens = response["written"]
+            let nickname = response["nickname"]
+            let count    = response["count"]
+            for (let index in writtens) {
+              let temp_html = `
+                                   
+                                <div class="card">
+                                  <div class="card-info" onclick="location.href='/detail?writtenId=${writtens[index]["writtenId"]}'">
+                                    <img class="card-img-top"
+                                        src=${writtens[index]["image_url"]}
+                                        alt="Card image cap">
+                                    <div class="user-group">
+                                      <span class="comment">댓글개수 : ${count[index]}<span>
+                                      <span class="user">${nickname[index]}님</span>
+                                      
+                                    </div>
+                        
+                                    <div class="card-body">
+                                        <p class="title">${writtens[index]["title"]}</p>
+                                        <p class="description">${writtens[index]["description"]}</p>
+                                    </div>
+                                  </div>
+                                  <div class="buttons">
+                                    <div>
+                                      <button type="button" onclick="location.href='written_update?writtenId=${writtens[index]["writtenId"]}'" class="btn btn-info">수정</button>
+                                      <button type="button" onclick="delete_card(${writtens[index]["writtenId"]})" class="btn btn-light">삭제</button>
+                                    </div> 
+                                  </div>
+                                </div>
+                              
+                                               
+                                            `
+               $("#cards-box").append(temp_html)
+            }
+          }
+        })
+             
+        }
+    </script>
+    <style>
+      * {
+        font-family: 'Nanum Gothic', sans-serif;
+      }
+      #navbar{
+        margin-bottom: 30px;
+      }
+      .select-group{
+        width: 500px;
+        margin : 30px 60px;
+      }
+
+      
+
+      .card {
+        display : flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top : 20px;
+        
+      }
+
+      .card-img-top {
+        width: 100%;
+        height: 18rem;
+
+      }
+
+      .user-group {
+        display : flex;
+        justify-content : space-between;
+      }
+
+      .user ,.comment{
+        margin : 18px;
+        margin-bottom : 7px;
+        font-weight : bold;
+      }
+
+      .comment {
+        
+        margin-left : 20px;
+      }
+
+
+      #cateogry{
+        margin : 10px 0 10px 0;
+      }
+
+      .buttons {
+        display : flex;
+        flex-direction: column;
+        align-items: center;
+        padding-bottom: 20px;
+      }
+      .title {
+        font-size: 20px;
+      }
+
+      .description{
+        font-size: 20px;
+        max-height: 8.8em;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/create">새글쓰기</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login" id="login">로그인</a>
+            <a class="nav-link" onclick="logout()" id="logout">로그아웃</a>
+
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div id="cards-box" class="card-columns"></div>
+    
+  </body>
+</html>

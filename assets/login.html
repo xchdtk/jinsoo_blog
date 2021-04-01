@@ -1,0 +1,179 @@
+<html>
+    <head>
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <title>로그인 / 회원가입 폼 템플릿</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                font-family: sans-serif;
+            }
+            .form-wrap {
+                width: 380px;
+                height: 480px;
+                position: relative;
+                margin: 6% auto;
+                background: #fff;
+                padding: 5px;
+                overflow: hidden;
+            }
+            .button-wrap {
+                width: 230px;
+                margin: 35px auto;
+                position: relative;
+                box-shadow: 0 0 600px 9px #fcae8f;
+                border-radius: 30px;
+            }
+            .togglebtn {
+                padding: 10px 30px;
+                cursor: pointer;
+                background: transparent;
+                border: 0;
+                outline: none;
+                position: relative;
+            }
+            #btn {
+                top: 0;
+                left: 0;
+                position: absolute;
+                width: 110px;
+                height: 100%;
+                background: linear-gradient(to right, #ff105f, #ffad06);
+                border-radius: 30px;
+                transition: .5s;
+            }
+            
+            .input-group {
+                top: 180px;
+                position: absolute;
+                width: 280px;
+                transition: .5s;
+            }
+            .input-field {
+                width: 100%;
+                padding: 10px 0;
+                margin: 5px 0;
+                border: none;
+                border-bottom: 1px solid #999;
+                outline: none;
+                background: transparent;
+            }
+            .submit {
+                width: 85%;
+                padding: 10px 30px;
+                cursor: pointer;
+                display: block;
+                margin: auto;
+                background: linear-gradient(to right, #ff105f, #ffad06);
+                border: 0;
+                outline: none;
+                border-radius: 30px;
+            }
+            .checkbox {
+                margin: 30px 10px 30px 0;
+            }
+            span {
+                color: #777;
+                font-size: 12px;
+                bottom: 68px;
+                position: absolute;
+            }
+            #login {
+                left: 50px;
+            }
+            #register {
+                left: 450px;
+            } 
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <div class="form-wrap">
+                <div class="button-wrap">
+                    <div id="btn"></div>
+                    <button type="button" class="togglebtn" onclick="toggle_login()">LOG IN</button>
+                    <button type="button" class="togglebtn" onclick="toggle_register()">REGISTER</button>
+                </div>
+                <div id="login" class="input-group">
+                    <input type="text" id="login_nickname" class="input-field" placeholder="nickname" required>
+                    <input type="password" id="login_password" class="input-field" placeholder="Enter Password" required>
+                    <button class="submit" onclick="login()">Login</button>
+                </div>
+                <div id="register" class="input-group">
+                    <input type="text" id="register_nickname"  class="input-field" placeholder="nickname" required>
+                    <input type="password" id="register_password"  class="input-field" placeholder="Enter Password" required>
+                    <input type="password" id="register_confirm_password" class="input-field" placeholder="Enter Confirm_Password" required>
+                    <button class="submit" onclick="register()" >REGISTER</button>
+                </div>
+                
+                
+            </div>
+        </div>
+        <script>
+
+            var x = document.getElementById("login");
+            var y = document.getElementById("register");
+            var z = document.getElementById("btn");
+            
+            
+            function toggle_login(){
+                x.style.left = "50px";
+                y.style.left = "450px";
+                z.style.left = "0";
+            }   
+
+            function toggle_register(){
+                x.style.left = "-400px";
+                y.style.left = "50px";
+                z.style.left = "110px";
+            }
+
+            function login() {
+                let nickname = $("#login_nickname").val()
+                let password = $("#login_password").val()
+                $.ajax({
+                type : "post",
+                url: '/user/signin',
+                data: {"nickname"  : nickname,
+                        "password" : password,
+                },
+                success: function(response) {
+                        if (response.token){
+                            let token = response.token
+                            localStorage.setItem("token", token);
+                            window.location.href = '/'
+                        }else{
+                            alert(response["errorMessage"])
+                            window.location.href = '/login'
+                        }
+                }
+                })
+            }
+                    
+            function register() {
+                
+                let nickname         = $("#register_nickname").val()
+                let password         = $("#register_password").val()
+                let confirm_password = $("#register_confirm_password").val()
+                $.ajax({
+                type : "post",
+                url: '/user/signup',
+                data: {"nickname"         : nickname,
+                       "password"         : password,
+                       "confirm_password" : confirm_password
+                },
+                error: function(xhr, status, error) {
+                    let err = JSON.parse(xhr.responseText);
+                    alert(err.errorMessage)
+                    window.location.href = '/login'
+                
+              },
+                success: function(response) {
+                        alert(response["result"])
+                        window.location.href = '/login'
+                }
+                })
+            }
+        </script>
+    </body>
+</html> 

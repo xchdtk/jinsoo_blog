@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+        <!-- Bulma CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+        <style>
+            body {
+                height: 100vh;
+            }
+            .box-group {
+                
+                display: flex;
+                justify-content: center;
+                align-content : center;
+
+            }
+            .box{
+                width: 500px;                
+            }
+
+            .create {
+                margin-top : 10px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="box-group" id="box-group">
+        </div>
+    </body>
+
+    <script>
+        
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const commentId = urlParams.get("commentId");
+
+        $(document).ready(function (){
+                get_update()
+            });
+
+        function get_update(){
+            $("#box-group").empty()
+            $.ajax({
+            type : "get",
+            url: `/api/update/comment/${commentId}`,
+            data: {},
+            success: function(response) {
+                comment = response.result
+                let temp_html = `<div class="box" id="box">
+                                    <div class="field">
+                                    <label class="label">Comment</label>
+                                    <div class="control">
+                                        <textarea class="textarea is-primary" id = "comment" placeholder="Comment">${comment.comment}</textarea>
+                                    </div>
+                                    <button class="button is-primary create" onclick="update_comment()">댓글 수정</button>
+                                </div>`
+                $("#box-group").append(temp_html)
+            }
+            })
+        }
+
+        function update_comment() {
+                let comment = $("#comment").val()
+                $.ajax({
+                type : "put",
+                url: `/api/comment/`,
+                headers : {
+                    'authorization' : `Bearer ${localStorage.getItem("token")}`
+                    },
+                data: {"comment"   : comment,
+                       "commentId" : commentId      
+                            },
+                error: function(xhr, status, error) {
+                    let err = JSON.parse(xhr.responseText);
+                    alert(err.errorMessage)
+                    window.location.href = '/login'
+                
+              },
+                success: function(response) {
+                    alert(response.result)
+                    window.location.href = '/'
+                    
+                }
+                })
+            }
+    </script>
+</html>
